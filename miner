@@ -33,6 +33,7 @@ solve() {
     # Brute force until you find something that's lexicographically
     # small than $difficulty.
     difficulty=$(cat difficulty.txt)
+    # difficulty="00"
 
     # Create a Git tree object reflecting our current working
     # directory
@@ -40,32 +41,14 @@ solve() {
     parent=$(git rev-parse HEAD)
     timestamp=$(date +%s)
 
-    counter=0
+    body=$(../solve $difficulty $tree $parent $timestamp)
 
-    while let counter=counter+1; do
-	echo -n .
+    sha1=$(git hash-object -t commit --stdin <<< "$body")
 
-	body="tree $tree
-parent $parent
-author CTF user <me@example.com> $timestamp +0000
-committer CTF user <me@example.com> $timestamp +0000
-
-Give me a Gitcoin
-
-$counter"
-
-	# See http://git-scm.com/book/en/Git-Internals-Git-Objects for
-	# details on Git objects.
-	sha1=$(git hash-object -t commit --stdin <<< "$body")
-
-	if [ "$sha1" "<" "$difficulty" ]; then
-	    echo
-	    echo "Mined a Gitcoin with commit: $sha1"
-	    git hash-object -t commit --stdin -w <<< "$body"  > /dev/null
-	    git reset --hard "$sha1" > /dev/null
-	    break
-	fi
-    done
+    echo
+    echo "Mined a Gitcoin with commit: $sha1"
+    git hash-object -t commit --stdin -w <<< "$body"  > /dev/null
+    git reset --hard "$sha1" > /dev/null
 }
 
 reset() {
